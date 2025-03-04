@@ -1,0 +1,25 @@
+{
+	"name": "obsidian-sample-plugin",
+	"version": "1.0.0",
+	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"main": "plugin/main.js",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"@codewithcheese/vite-plugin-obsidian": "workspace:*",
+		"@types/node": "^22.13.4",
+		"obsidian": "latest",
+		"svelte": "^5.20.2",
+		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"tslib": "2.4.0",
+		"typescript": "4.7.4",
+		"vite": "^6.1.1"
+	},
+	"packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387"
+}
