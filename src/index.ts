@@ -3,7 +3,7 @@ import { cwd } from "node:process";
 import merge from "lodash.merge";
 import type { PluginOption, ResolvedConfig, UserConfig } from "vite";
 import { createLogger } from "./logger";
-import type { PluginOptions, VitePluginOptions } from "./types";
+import type { PluginOptions } from "./types";
 import { resolveServerUrl } from "./utils";
 import esbuild from "esbuild";
 import process from "process";
@@ -23,44 +23,41 @@ export * from "./types";
 const isDev = process.env.NODE_ENV === "development";
 const logger = createLogger();
 
-function preMergeOptions(options?: VitePluginOptions): VitePluginOptions {
-  const opts: VitePluginOptions = merge(
+function preMergeOptions(options?: PluginOptions): PluginOptions {
+  const opts: PluginOptions = merge(
     {
-      recommended: true,
-      extension: {
-        banner: {
-          js: banner,
-        },
-        entryPoints: ["plugin/main.ts"],
-        bundle: true,
-        external: [
-          "obsidian",
-          "electron",
-          "@codemirror/autocomplete",
-          "@codemirror/collab",
-          "@codemirror/commands",
-          "@codemirror/language",
-          "@codemirror/lint",
-          "@codemirror/search",
-          "@codemirror/state",
-          "@codemirror/view",
-          "@lezer/common",
-          "@lezer/highlight",
-          "@lezer/lr",
-          ...builtins,
-        ],
-        target: "es2022",
-        logLevel: "info",
-        sourcemap: isDev ? "inline" : undefined,
-        treeShaking: true,
-        resolveExtensions: [".svelte", ".svelte.ts", ".ts", ".js"],
-        tsconfig: path.resolve(process.cwd(), "tsconfig.json"),
-      } satisfies PluginOptions,
-    },
+      banner: {
+        js: banner,
+      },
+      entryPoints: ["plugin/main.ts"],
+      bundle: true,
+      external: [
+        "obsidian",
+        "electron",
+        "@codemirror/autocomplete",
+        "@codemirror/collab",
+        "@codemirror/commands",
+        "@codemirror/language",
+        "@codemirror/lint",
+        "@codemirror/search",
+        "@codemirror/state",
+        "@codemirror/view",
+        "@lezer/common",
+        "@lezer/highlight",
+        "@lezer/lr",
+        ...builtins,
+      ],
+      target: "es2022",
+      logLevel: "info",
+      sourcemap: isDev ? "inline" : undefined,
+      treeShaking: true,
+      resolveExtensions: [".svelte", ".svelte.ts", ".ts", ".js"],
+      tsconfig: path.resolve(process.cwd(), "tsconfig.json"),
+    } satisfies PluginOptions,
     options,
   );
 
-  const opt = opts.extension || {};
+  const opt = opts || {};
 
   if (isDev) {
     opt.sourcemap = opt.sourcemap ?? true;
@@ -73,15 +70,12 @@ function preMergeOptions(options?: VitePluginOptions): VitePluginOptions {
   return opts;
 }
 
-export function useObsidianPlugin(options?: VitePluginOptions): PluginOption[] {
+export function useObsidianPlugin(options?: PluginOptions): PluginOption[] {
   const opts = preMergeOptions(options);
 
   const handleConfig = (config: UserConfig): UserConfig => {
     let outDir = config?.build?.outDir || "dist";
-    opts.extension ??= {};
-    if (opts.recommended) {
-      opts.extension.outdir = outDir;
-    }
+    opts.outdir = outDir;
 
     const cors = {
       origin: ["app://obsidian.md"],
@@ -122,8 +116,7 @@ export function useObsidianPlugin(options?: VitePluginOptions): PluginOption[] {
         server.httpServer?.once("listening", async () => {
           logger.info("extension build start");
 
-          const { onSuccess: _onSuccess, ...esbuildOptions } =
-            opts.extension || {};
+          const { onSuccess: _onSuccess, ...esbuildOptions } = opts || {};
           const context = await esbuild.context(
             merge(esbuildOptions, {
               plugins: [
@@ -140,7 +133,7 @@ export function useObsidianPlugin(options?: VitePluginOptions): PluginOption[] {
                   setup(build) {
                     build.onEnd(async () => {
                       try {
-                        const outdir = opts.extension?.outdir || "dist";
+                        const outdir = opts.outdir || "dist";
                         const manifestPath = path.join(outdir, "manifest.json");
                         if (fs.existsSync(manifestPath)) {
                           const content = fs.readFileSync(manifestPath, "utf8");
@@ -190,8 +183,7 @@ export function useObsidianPlugin(options?: VitePluginOptions): PluginOption[] {
           outDir = outDir.substring(1);
         }
 
-        const { onSuccess: _onSuccess, ...esbuildOptions } =
-          opts.extension || {};
+        const { onSuccess: _onSuccess, ...esbuildOptions } = opts || {};
 
         await esbuild.build(
           merge(esbuildOptions, {

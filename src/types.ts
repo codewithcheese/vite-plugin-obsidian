@@ -9,8 +9,3 @@ export interface PluginOptions
   outdir?: string;
   onSuccess?: () => Promise<void | undefined | (() => void | Promise<void>)>;
 }
-
-export interface VitePluginOptions {
-  recommended?: boolean;
-  extension?: PluginOptions;
-}
